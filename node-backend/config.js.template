@@ -1,0 +1,16 @@
+// config.js
+const config = {
+ app: {
+   port: APP_PORT
+ },
+ twitter: {
+   consumer_key: CONSUMER_KEY,
+   consumer_key_secret: CONSUMER_KEY_SECRET,
+ },
+ redis: {
+   host: REDIS_HOST,
+   port: REDIS_PORT
+ }
+};
+
+module.exports = config;
