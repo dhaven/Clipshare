@@ -1,0 +1,28 @@
+{
+
+  "manifest_version": 2,
+  "name": "Snippy",
+  "version": "1.0",
+  "description": "Snip clips and share on social media",
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*",
+    "storage"
+  ],
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+  "browser_action": {
+    "default_icon": "icons/beasts-32.png",
+    "default_title": "Snip clips",
+    "default_popup": "popup/choose_video.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://example.com/*"],
+      "js": ["content_scripts/read_token.js"]
+    }
+  ]
+
+}

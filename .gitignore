@@ -1,3 +1,6 @@
-node-backend/media
-node-backend/node_modules
-node-backend/config.js
+backend/media
+backend/node_modules
+backend/config.js
+frontend/addon/popup/app.bundle.js
+frontend/addon/popup/app.bundle.js.LICENSE.txt
+frontend/node_modules
