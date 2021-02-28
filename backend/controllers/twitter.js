@@ -47,7 +47,7 @@ class Twitter {
     const request_data = {
       url: 'https://api.twitter.com/oauth/request_token',
       method: 'POST',
-      data: { oauth_callback: 'http://example.com' },
+      data: { oauth_callback: 'http://localhost:2020/authorized' },
     }
     let formData = this.oauth.authorize(request_data)
     const params = new URLSearchParams({

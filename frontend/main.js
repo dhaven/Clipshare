@@ -7,7 +7,8 @@ var CryptoJS = require("crypto-js");
 import {io} from "socket.io-client";
 var config = require('./src/js/config/config.js');
 
-const socket = io("http://" + config.backend.host + ":" + config.backend.port); // use ws:// ?
+const backend_URL = config.backend.protocol + "://" + config.backend.host + ":" + config.backend.port
+const socket = io(backend_URL); // use ws:// ?
 socket.on("connect", () => {
   socket.on(socket.id + "-tweet-finish", (arg) => {
     console.log(arg)
@@ -30,7 +31,7 @@ var initializePlayer = function(video_id){
   document.getElementsByTagName("body")[0].appendChild(shareButton)
   let player = createPlayer('my-player');
   player.src({
-    src: 'http://localhost:2020/'+video_id+'/'+video_id+'.mp4',
+    src: backend_URL + '/'+video_id+'/'+video_id+'.mp4',
     type: 'video/mp4'
   });
   player.play()
@@ -42,7 +43,7 @@ var trim = function(video_id){
   //console.log(player.formatTrimDuration())
   return axios({
     method: 'post',
-    url: 'http://localhost:2020/trim',
+    url: backend_URL + '/trim',
     data: {
       video_id: video_id,
       start: player.formatTrimStart(),
@@ -57,7 +58,7 @@ var get = function(){
           .then(function(tabs){
             axios({
               method: 'post',
-              url: 'http://localhost:2020/get',
+              url: backend_URL + '/get',
               data: {
                 url: tabs[0].url,
                 ws: socket.id
@@ -78,7 +79,7 @@ var tweet_video = function(){
   const gettingStoredSettings = browser.storage.local.get();
   gettingStoredSettings.then(
     storedSettings => {
-      axios.post('http://localhost:2020/tweetvideo',{
+      axios.post(backend_URL + '/tweetvideo',{
         oauth_token: storedSettings.auth.oauth_token,
         oauth_token_secret: storedSettings.auth.oauth_token_secret,
         video_id: storedSettings.video_id,
@@ -118,7 +119,14 @@ var primary_flow = function(){
 }
 //store auth data and proceed with normal flow
 var second_flow = function(message,sender){
-  getAccessToken(message,sender).then(result => {
+  browser.tabs.remove(sender.tab.id)
+  browser.tabs.update(
+    browser.tabs.getCurrent().id,
+    {
+      active: true
+    }
+  )
+  getAccessToken(message).then(result => {
     browser.storage.local.set({auth:result.data});
     primary_flow()
   })

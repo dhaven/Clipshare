@@ -20,7 +20,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://example.com/*"],
+      "matches": ["http://localhost/authorized*"],
       "js": ["content_scripts/read_token.js"]
     }
   ]

@@ -1,8 +1,8 @@
 var config = {
   backend: {
-    host: 'localhost',
-    port: '2020'
+    host: 'www.clipshare.xyz',
+    port: '443',
+    protocol: 'https'
   },
 };
-
 module.exports = config;

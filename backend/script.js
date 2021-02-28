@@ -13,28 +13,33 @@ const { sep } = require('path');
 const processDownload = require('./queues/download.js');
 const processTrim = require('./queues/trim.js');
 const processTweet = require('./queues/tweet.js');
+var IORedis = require('ioredis');
 
 var Twitter = require('./controllers/twitter.js');
 var T = new Twitter(config.twitter.consumer_key,config.twitter.consumer_key_secret)
 
-const downloadQueue = new Bullmq.Queue('video download');
-const trimQueue = new Bullmq.Queue('trim video');
-const tweetQueue = new Bullmq.Queue('tweet video');
+const connection = new IORedis({
+  host: config.redis.host,
+  port: config.redis.port
+});
+const downloadQueue = new Bullmq.Queue('video download',{ connection });
+const trimQueue = new Bullmq.Queue('trim video',{ connection });
+const tweetQueue = new Bullmq.Queue('tweet video',{ connection });
 
-const downloadWorker = new Bullmq.Worker('video download', processDownload);
+const downloadWorker = new Bullmq.Worker('video download', processDownload, { connection });
 downloadWorker.on("completed", (job, response) => {
   io.emit(job.data.ws + "-download-finish", 'download success');
 });
-const trimWorker = new Bullmq.Worker('trim video', processTrim);
+const trimWorker = new Bullmq.Worker('trim video', processTrim, { connection });
 trimWorker.on("completed", (job, response) => {
   io.emit(job.data.ws + "-trim-finish", 'trim success');
 });
-const tweetWorker = new Bullmq.Worker('tweet video', processTweet);
+const tweetWorker = new Bullmq.Worker('tweet video', processTweet, { connection });
 tweetWorker.on("completed", (job, response) => {
   io.emit(job.data.ws + "-tweet-finish", 'tweet success');
 });
 tweetWorker.on("failed", (job, response) => {
-  io.emit(job.data.ws + "-tweet-finish", response);
+  io.emit(job.data.ws + "-tweet-finish", { response });
 });
 
 const cors = require('cors');
@@ -59,6 +64,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors())
 app.use(express.static(path.join(__dirname,'media')));
 app.use(express.static(path.join(__dirname,'files')));
+
+app.use('/health', require('./routes/health.js'));
 
 app.post('/tweet', (req,res) => {
   const params = new URLSearchParams(req.body)
@@ -113,6 +120,12 @@ app.post('/trim', (req, res) => {
 app.get('/authorize_app', (req,res) => {
   T.request_oauth_token().then( response => {
     res.json(response)
+  })
+})
+
+app.get('/authorized', (req,res) => {
+  T.request_oauth_token().then( response => {
+    res.send("access granted")
   })
 })
 
