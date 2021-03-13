@@ -5,8 +5,8 @@ var config = require('../config/config.js');
 
 const backend_URL = config.backend.protocol + "://" + config.backend.host + ":" + config.backend.port
 
-export function getAccessToken(message){
-  let data = message.query_string.split('&');
+export function getAccessToken(query_string){
+  let data = query_string.split('&');
   var result = {};
   data.forEach(element => {
     var item = element.split("=");
@@ -23,6 +23,7 @@ export function getAccessToken(message){
 }
 
 export function login(){
+  console.log("trying to login")
   axios.get(backend_URL + '/authorize_app')
        .then(response => {
          browser.tabs.create({

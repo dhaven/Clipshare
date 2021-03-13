@@ -4,9 +4,9 @@
   "description": "test compile",
   "main": "main.js",
   "scripts": {
-    "build:dev": "webpack --env NODE_ENV=dev",
-    "build:prod": "webpack --env NODE_ENV=prod",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:dev": "webpack --env NODE_ENV=dev --config webpack.config.js",
+    "build:prod": "webpack --env NODE_ENV=prod --config webpack.config.js",
+    "build:dev:bs": "webpack --env NODE_ENV=dev --config webpack-background-script.config.js"
   },
   "author": "dhaven",
   "license": "ISC",
@@ -18,8 +18,6 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^8.2.2",
     "babel-preset-env": "^1.7.0",
-    "crypto-js": "^4.0.0",
-    "css-loader": "^5.0.1",
     "oauth-1.0a": "^2.2.6",
     "video.js": "^7.10.2",
     "webpack": "^5.17.0",
@@ -27,6 +25,8 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
+    "lit-element": "^2.4.0",
+    "lit-html": "^1.3.0",
     "socket.io-client": "^3.1.1"
   }
 }

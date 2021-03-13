@@ -4,3 +4,4 @@ backend/config.js
 frontend/addon/popup/app.bundle.js
 frontend/addon/popup/app.bundle.js.LICENSE.txt
 frontend/node_modules
+frontend/addon/background_scripts/background-script.bundle.js

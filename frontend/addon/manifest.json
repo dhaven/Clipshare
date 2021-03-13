@@ -23,6 +23,9 @@
       "matches": ["http://localhost/authorized*"],
       "js": ["content_scripts/read_token.js"]
     }
-  ]
+  ],
+  "background": {
+    "page": "background_scripts/background-page.html"
+  }
 
 }

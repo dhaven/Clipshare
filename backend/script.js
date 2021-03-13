@@ -7,13 +7,13 @@ const ffmpeg = require('ffmpeg-static');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const config = require('./config');
-var CryptoJS = require("crypto-js");
 var Bullmq =  require('bullmq');
 const { sep } = require('path');
 const processDownload = require('./queues/download.js');
 const processTrim = require('./queues/trim.js');
 const processTweet = require('./queues/tweet.js');
 var IORedis = require('ioredis');
+const { v4: uuidv4 } = require('uuid');
 
 var Twitter = require('./controllers/twitter.js');
 var T = new Twitter(config.twitter.consumer_key,config.twitter.consumer_key_secret)
@@ -28,6 +28,7 @@ const tweetQueue = new Bullmq.Queue('tweet video',{ connection });
 
 const downloadWorker = new Bullmq.Worker('video download', processDownload, { connection });
 downloadWorker.on("completed", (job, response) => {
+  console.log("emitting video success to frontend socket with id : " + job.data.ws)
   io.emit(job.data.ws + "-download-finish", 'download success');
 });
 const trimWorker = new Bullmq.Worker('trim video', processTrim, { connection });
@@ -94,19 +95,23 @@ app.post('/tweetvideo', (req,res) => {
 app.post('/get', (req,res) => {
   //compute video_id by hashing the URL
   console.log("get video")
+  let video_id = uuidv4()
   downloadQueue.add('download_job',{
+    uuid: video_id,
     url: req.body.url,
     ws: req.body.ws
   })
   res.json({
       message: 'video added to download queue',
-      video_id: CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(req.body.url))
+      video_id: video_id
   });
 });
 
 app.post('/trim', (req, res) => {
   console.log("cutting video")
+  let trimmed_video_id = uuidv4()
   trimQueue.add('trim_job',{
+    trimmed_video_id: trimmed_video_id,
     video_id: req.body.video_id,
     start: req.body.start,
     duration: req.body.duration,
@@ -114,6 +119,7 @@ app.post('/trim', (req, res) => {
   })
   res.json({
       message: 'video added to trim queue',
+      video_id: trimmed_video_id
   });
 });
 
