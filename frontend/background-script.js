@@ -1,5 +1,6 @@
 const axios = require('axios');
 var config = require('./src/js/config/config.js');
+
 const backend_URL = config.backend.protocol + "://" + config.backend.host + ":" + config.backend.port
 browser.runtime.onMessage.addListener((message,sender) => {
   if('query_string' in message){
@@ -18,7 +19,7 @@ browser.runtime.onMessage.addListener((message,sender) => {
         result[item[0]] = item[1];
       });
       const request_data = {
-        url: backend_URL + '/access_token',
+        url: backend_URL + '/auth/access_token',
         method: 'POST',
         data: { oauth_token: result['oauth_token'],
                 oauth_verifier: result['oauth_verifier']
@@ -31,4 +32,16 @@ browser.runtime.onMessage.addListener((message,sender) => {
       })
     })
   }
+});
+
+browser.runtime.onInstalled.addListener((details) => {
+  console.log(details);
+  // create new user in backend
+  const request_data = {
+    url: backend_URL + '/user',
+    method: 'POST',
+  }
+  axios(request_data).then(result => {
+    browser.storage.local.set({user_id: result.data});
+  })
 });

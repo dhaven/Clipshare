@@ -1,68 +1,159 @@
-import { LitElement, html} from 'lit-element';
-import {directive} from 'lit-html';
-import videojs from 'video.js';
-const axios = require('axios');
-var config = require('../config/config.js');
-import {login} from '../auth/auth.js';
+import { LitElement, html } from 'lit-element';
+import {directive, NodePart} from 'lit-html';
 import createPlayer from '../videojs/trimPlayer.js';
+import './header.js';
+var config = require('../config/config.js');
+const axios = require('axios');
+import videojs from 'video.js';
+import {login} from '../auth/auth.js';
 
-class Edit extends LitElement {
+class DummyEdit extends LitElement {
   constructor() {
     super();
-    // the backend we talk to
+    this.user_id = ''
+    this.youtube_url = ''
+    this.video_id = ''
+    this.editing = false
+    this.authenticated = false
     this.backend_url = config.backend.protocol + "://" + config.backend.host + ":" + config.backend.port
-    //the current youtube url
-    this.youtube_url = document.querySelector('#my-app').youtube_url
-    // the video_id from the current youtube url
-    //this.video_id = CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(this.youtube_url))
     // set the socket listener so that UI is updated once video finishes downloading
     this.socket = document.querySelector('#my-app').socket
 
+    this.nestedPartMap = new WeakMap();
+
+    // Creates a new nested part and adds it to the DOM
+    // managed by containerPart
+    this.createAndAppendPart = (containerPart) => {
+      const newPart = new NodePart(containerPart.options);
+      newPart.appendIntoPart(containerPart);
+
+      return newPart;
+    }
     //callback function to display UI to user based on the stage he is at in the editing process
     this.resolvePromise = directive((promise) => (part) => {
-      console.log("init refresh UI")
+      if (!(part instanceof NodePart)) {
+        throw new Error('duplicate directive can only be used in content bindings');
+      }
+      const nestedParts = this.nestedPartMap.get(part);
+      let aboveVideo, video, belowVideo
+      if (nestedParts === undefined) { //on first render we need to create the parts
+        aboveVideo = this.createAndAppendPart(part);
+        video = this.createAndAppendPart(part);
+        belowVideo = this.createAndAppendPart(part);
+        this.nestedPartMap.set(part, [aboveVideo, video, belowVideo]);
+      }else {
+        [aboveVideo, video, belowVideo] = nestedParts;
+      }
       Promise.resolve(promise).then((resolvedValue) => {
         if(resolvedValue.state == 'INIT'){ //no video found so let the user decide if he want's to start editing this one
-          part.setValue(html`<button id="start-editing" @click="${this.fetch_video}">Start editing !</button>`);
-          part.commit();
+          aboveVideo.setValue(html`
+            <button id="start-editing" @click="${this.fetch_video}">Start editing !</button>
+          `)
+          aboveVideo.commit();
         }else if(resolvedValue.state == 'EDIT'){ // let the user continue to work on his video
-          part.setValue(html`
-            <video id="my-player" class="video-js" preload="auto" controls>
-            </video>
-            <button id="share_on_twitter" @click="${this.trim}">finish</button>
-          `
-          );
-          part.commit();
-          this.player = createPlayer('my-player');
-          this.player.src({
-            src: resolvedValue.value,
-            type: 'video/mp4'
-          });
-        }else if(resolvedValue.state == 'SUBMIT'){
-          part.setValue(html`
-            <button id="back" @click="${this.back_to_edit}"><- Back to edit</button>
-            <video id="my-player" class="video-js" preload="auto" controls>
-            </video>
+          if( !this.player ){ //if player is initialized don't add it again
+            video.setValue(html`
+            <div class="cs-body">
+              <div data-vjs-player>
+                <video 
+                  id="my-player" 
+                  class="video-js vjs-trim" 
+                  preload="auto" 
+                  controls>
+                  <source src="${resolvedValue.video_url}" type="video/mp4"></source>
+                </video>
+              </div>
+            </div>
+            `);
+            video.commit();
+            console.log("initializing player for edit")
+            this.player = createPlayer("my-player", {width:"320px",height:"180px"})
+          }else {
+            //set the correct source
+            this.player.reset()
+            this.player.src({
+              src: resolvedValue.video_url,
+              type: 'video/mp4'
+            })
+          }
+          console.log(`${resolvedValue.startTrim}-${resolvedValue.endTrim}`)
+          this.player.ready(function(){
+            let myplayer = videojs.getPlayer('my-player')
+            myplayer.updateProgressControl(true)
+          })
+          aboveVideo.setValue()
+          aboveVideo.commit()
+          belowVideo.setValue(html`
+            <div class="cs-footer">
+              <button id="share_on_twitter" @click="${this.trim}" class="cs-app">finish</button>
+            </div>
+          `)
+          belowVideo.commit();
+        }else if(resolvedValue.state == 'FORCE LOGIN'){
+          aboveVideo.setValue(html`
+          <div>
+            <button id="login" @click="${login}" class="cs-app">>> LOGIN <<</button>
+          </div>
+          `)
+          aboveVideo.commit();
+          this.player.dispose()
+          this.player = null
+          video.setValue()
+          video.commit()
+          belowVideo.setValue();
+          belowVideo.commit();
+        }else{ //SUBMIT
+          //flow should be different based on if you a coming from edit (replace customprogress by normal progress)
+          // or if you are opening up the popup (don't remove anything)
+          if( !this.player ){
+            video.setValue(html`
+            <div class="cs-body">
+              <div data-vjs-player>
+                <video 
+                  id="my-player" 
+                  class="video-js vjs-trim" 
+                  preload="auto" 
+                  controls>
+                  <source src="${resolvedValue.video_url}" type="video/mp4"></source>
+                </video>
+              </div>
+            </div>
+            `);
+            video.commit();
+            console.log("initializing player for submit")
+            this.player = createPlayer("my-player", {width:"320px",height:"180px"})
+          }else{
+            //set the correct source
+            this.player.src({
+               src: resolvedValue.video_url,
+               type: 'video/mp4'
+            })
+          }
+          this.player.updateProgressControl(false)
+          aboveVideo.setValue(html`
+            <button id="back" class="cs-app" @click="${this.back_to_edit}"><- Back to edit</button>
+          `);
+          aboveVideo.commit()
+          belowVideo.setValue(html`
+          <div class="cs-footer">
             <input id="editBox" type="text"></input>
-            <button id="tweet" @click="${this.tweet}">tweet</button>
-          `
-          );
-          part.commit();
-          this.player = videojs('my-player');
-          this.player.src({
-            src: resolvedValue.value,
-            type: 'video/mp4'
-          });
-        }
-        else if(resolvedValue.state == 'NOT LOGGED IN'){
-          part.setValue(html`
-            Please log in to Twitter first.
-          `
-          );
-          part.commit();
+            <button id="tweet" class="cs-app">tweet</button>
+          </div>
+          `)
+          belowVideo.commit()
         }
       });
     });
+  }
+
+  static get properties() {
+    return {
+      user_id: {type: String},
+      youtube_url: {type: String},
+      video_id: {type: String},
+      editing: {type: Boolean},
+      authenticated: {type: Boolean}
+    };
   }
 
   /*
@@ -70,27 +161,73 @@ class Edit extends LitElement {
   */
   fetch_video(){
     this.socket.on(this.socket.id + "-download-finish", (arg) => {
-      console.log("update UI because received confirmation that video finished downloading")
-      browser.storage.local.set({editing:true});
-      this.requestUpdate();
+      this.video_id = arg;
     });
     axios({
-      method: 'post',
-      url: this.backend_url + '/get',
-      data: {
+      method: 'get',
+      url: this.backend_url + '/video',
+      params: {
         url: this.youtube_url,
+        user_id: this.user_id,
         ws: this.socket.id
-      }
+      },
     }).then(response => {
-      console.log("setting local videoId value to :" + response.data.video_id)
-      browser.storage.local.set({video_id:response.data.video_id});
+      console.log(response)
     })
-    .catch(function (error) {
-      console.log(error.toJSON());
+    .catch( error => {
+      console.error(`Fatal error occurred: ${error}`)
     });
   }
 
   /*
+    onclick for when the user wishes to resume editing the video
+    updates DB with edit.active = true and returns the correct video_id
+  */
+  back_to_edit() {
+    axios({
+      method: 'post',
+      url: this.backend_url + '/user/edit_active',
+      data: {
+        user_id: this.user_id,
+        ws: this.socket.id,
+        active: true
+      }
+    }).then(response => {
+      console.log(response)
+      this.editing = true
+    }).catch(error => {
+      console.error(`Fatal error occurred: ${error}`)
+    });
+  }
+
+  /*
+  trim a video based on user defined start and end time
+  */
+  trim(){
+    this.socket.on(this.socket.id + "-trim-finish", (arg) => {
+      this.video_id = arg
+      this.editing = false
+    });
+    let player = videojs.getPlayer("my-player")
+    axios({
+      method: 'post',
+      url: this.backend_url + '/video/trim',
+      data: {
+        startTime: player.formatTrimStart(),
+        startPercent: player.startTrim(),
+        duration: player.formatTrimDuration(),
+        endPercent: player.endTrim(),
+        user_id: this.user_id,
+        ws: this.socket.id
+      }
+    }).then(response => {
+      console.log(response)
+    }).catch(error => {
+      console.error(`Fatal error occurred: ${error}`)
+    });
+  }
+
+    /*
   Tweet a video and text
   */
   tweet(){
@@ -120,79 +257,67 @@ class Edit extends LitElement {
   };
 
   /*
-  trim a video based on user defined start and end time
+    Async function that will resolve to true if user is authenticated and false otherwise
   */
-  trim(){
-    this.socket.on(this.socket.id + "-trim-finish", (arg) => {
-      console.log("update UI because received confirmation that video finished trimming")
-      browser.storage.local.set({editing:false});
-      this.requestUpdate();
-    });
-    const gettingStoredSettings = browser.storage.local.get();
-    gettingStoredSettings.then(storedSettings => {
-      let player = videojs.getPlayer("my-player")
-      axios({
-        method: 'post',
-        url: this.backend_url + '/trim',
-        data: {
-          video_id: storedSettings.video_id,
-          start: player.formatTrimStart(),
-          duration: player.formatTrimDuration(),
-          ws: this.socket.id
-        }
-      }).then(response => {
-        browser.storage.local.set({video_id:response.data.video_id});
-      }).catch(error => {
-        console.log(error);
-      });
-    },
-    error => {
-    console.log(`Error: ${error}`);
-    });
-  }
-
-  /*
-    onclick for when the user wishes to resume editing the video
-  */
-  back_to_edit(){
-    browser.storage.local.set({editing:true});
-    this.fetch_video() //this will trigger a render
-  }
-
-  /*
-  Decide if the user should be shown the WELCOME UI, the EDIT VIDEO UI or the SUBMIT VIDEO UI
-  */
-  initOrResume(){
-    const gettingStoredSettings = browser.storage.local.get();
-    let promise = gettingStoredSettings.then(storedSettings => {
-      if (!storedSettings.video_id) {
-        console.log("video not present. Display \"Start working on video\"")
-        return {state:"INIT"}
-      }else if(storedSettings.editing){
-        console.log("user is working on video but hasn't logged in yet")
-        let video_url = this.backend_url +'/'+storedSettings.video_id+'.mp4'
-        return {state:"EDIT", value:video_url}
-      }else if(!storedSettings.editing && !storedSettings.auth) {
-        console.log("User needs to login before he can submit the video")
-        login()
-        return {state:"NOT LOGGED IN"}
-      }else if(!storedSettings.editing && storedSettings.auth){
-        console.log("Let the user submit the video")
-        let video_url = this.backend_url +'/'+storedSettings.video_id+'.mp4'
-        return {state:"SUBMIT", value:video_url}
+  isAuthenticated(){
+    let promise = new Promise((resolve,reject) => { 
+      if(!this.authenticated){
+        const gettingStoredSettings = browser.storage.local.get();
+        gettingStoredSettings.then(
+          storedSettings => {
+            if(!storedSettings.auth){
+              resolve(false)
+            }else{
+              this.auth = storedSettings.auth
+              resolve(true)
+            }
+        });
+      }else{
+        resolve(true)
       }
+    })
+    return promise
+  }
+
+  updateComponent(){
+    let promise = new Promise((resolve,reject) => {
+      axios({
+        method: 'get',
+        url: this.backend_url + '/user',
+        params: {
+          user_id: this.user_id,
+          url: this.youtube_url
+        },
+      }).then(response => {
+        if(!response.data || !('video_id' in response.data)){
+          resolve({state:"INIT"})
+        }else{
+          if(response.data.edit.active){
+            let video_url = this.backend_url +'/'+response.data.video_id+'.mp4'
+            resolve({state:"EDIT", video_url: video_url})
+          }else{
+            this.isAuthenticated()
+              .then(isAuth =>{
+                if(isAuth){
+                  let video_url = this.backend_url +'/'+response.data.trimmed_video_id+'.mp4'
+                  resolve({state:"SUBMIT", video_url: video_url})
+                }else{
+                  resolve({state:"FORCE LOGIN"})
+                }
+              })
+          }
+        }
+      }).catch(error => {
+        console.error(`Fatal error occurred: ${error}`)
+        reject(error)
+      });
     });
     return promise
   }
 
   render() {
-    if(document.querySelector('#my-player')){
-      //if there is already a player in the UI. Dispose of it before it gets recreated
-      console.log("trying to dispose video")
-      this.player.dispose();
-    }
     return html`
-        ${this.resolvePromise(this.initOrResume())}
+      ${this.resolvePromise(this.updateComponent())}
     `;
   }
 
@@ -204,4 +329,4 @@ class Edit extends LitElement {
     return this;
   }
 }
-customElements.define('cs-edit', Edit);
+customElements.define('dummy-edit', DummyEdit);

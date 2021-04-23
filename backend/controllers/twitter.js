@@ -102,6 +102,31 @@ class Twitter {
           })
   }
 
+  profile(authData){
+    let url = 'https://api.twitter.com/1.1/users/show.json'
+    let method = 'GET'
+    let params = {
+      screen_name: authData.screen_name,
+      user_id: authData.user_id
+    }
+    let token = {
+      key: authData.oauth_token,
+      secret: authData.oauth_token_secret,
+    }
+    let headers = {
+      'Authorization': this.get_oauth_authorization_header(url,method,params,token),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    let config = {
+      method: method,
+      url: url,
+      headers: headers,
+      params: params
+    };
+    console.log(config)
+    return axios(config);
+  }
+
   tweet_video(token,video_id,message){
     //start with upload media file
     console.log("working on tweet")

@@ -7,15 +7,11 @@ import clamp from './utils/clamp.js';
 class CustomSeekBar extends SeekBar {
   constructor(player, options) {
     super(player, options);
-  }
-
-  update(event) {
-    if(this.getProgress() >= this.player_.endTrim()){
-      this.player_.pause();
-    }else{
-      super.update(event);
+    if (this.startTrimPlayerEvent) {
+      this.on(this.player_, this.startTrimPlayerEvent, this.update);
     }
   }
+
   handleMouseMove(event) {
     const seekBarEl = this.el();
     let seekBarPoint = videojs.dom.getPointerPosition(seekBarEl, event).x;
@@ -27,6 +23,27 @@ class CustomSeekBar extends SeekBar {
       super.handleMouseMove(event);
     }
   }
+
+  update(event) {
+    if (!this.el_ || !this.bar) {
+      return;
+    }
+    if(this.getProgress() >= this.player_.endTrim()){
+      this.player_.pause();
+    }else{
+      const startTrimPosition = Number(clamp(this.player_.startTrim(), 0, 1).toFixed(4));
+      const videoProgress = Number(clamp(this.getPercent(), 0, 1).toFixed(4));
+
+      this.requestNamedAnimationFrame('Slider#update', () => {
+
+        // Convert to a percentage for css value
+        this.bar.el().style['left'] = (startTrimPosition * 100).toFixed(2) + '%';
+        this.bar.el().style['width'] = (videoProgress * 100).toFixed(2) - (startTrimPosition * 100).toFixed(2) + '%';
+      });
+
+      return videoProgress;
+    }
+  }
 }
 
 CustomSeekBar.prototype.options_ = {
@@ -36,6 +53,13 @@ CustomSeekBar.prototype.options_ = {
   ],
   barName: 'playProgressBar'
 };
+
+/**
+ * Call the update event for this Slider when this event happens on the player.
+ *
+ * @type {string}
+ */
+ CustomSeekBar.prototype.startTrimPlayerEvent = 'starttrimchange';
 
 // MouseTimeDisplay tooltips should not be added to a player on mobile devices
 if (!videojs.browser.IS_IOS && !videojs.browser.IS_ANDROID) {

@@ -9,13 +9,14 @@ class TrimButton extends Component {
     super(player,options);
     this.on('mousedown', this.handleMouseDown);
     this.on('touchstart', this.handleMouseDown);
-    if (this.startTrimPlayerEvent) {
-      this.on(this.player_, this.startTrimPlayerEvent, this.update);
-    }
-    if (this.endTrimPlayerEvent) {
-      this.on(this.player_, this.endTrimPlayerEvent, this.update);
-    }
     this.orientationRight(!!this.options_.orientationRight);
+    if (this.orientationRight()) {
+      console.log('will update on starttrimchange')
+      this.on(this.player_, 'starttrimchange', this.update);
+    }else{
+      console.log('will update on endtrimchange')
+      this.on(this.player_, 'endtrimchange', this.update);
+    }
   }
   createEl() {
     return super.createEl('div', {
@@ -85,24 +86,14 @@ class TrimButton extends Component {
   update() {
     const progress = this.getProgress();
 
-    //if (progress === this.player_.cache_.startTrimTime_) {
-      //return progress;
-    //}
-    //console.log("progress = " + progress)
-    //console.log("this.player_.startTrimTime_ = " + this.player_.cache_.startTrimTime_)
-    //this.player_.cache_.startTrimTime_ = progress;
     if(this.orientationRight()){
-      this.requestNamedAnimationFrame('Slider#update', () => {
+      this.requestNamedAnimationFrame('updateTrimLeft', () => {
         const sizeKey = 'left'
-        // Convert to a percentage for css value
-        //this.bar.el().style[sizeKey] = 100 - (progress * 100).toFixed(2) + '%'; keep this for endtrim
         this.el().style[sizeKey] = (progress * 100).toFixed(2) + '%';
       });
     }else{
-      this.requestNamedAnimationFrame('Slider#update', () => {
+      this.requestNamedAnimationFrame('updateTrimRight', () => {
         const sizeKey = 'right'
-        // Convert to a percentage for css value
-        //this.bar.el().style[sizeKey] = 100 - (progress * 100).toFixed(2) + '%'; keep this for endtrim
         this.el().style[sizeKey] = 100 - (progress * 100).toFixed(2) + '%';
       });
     }
@@ -112,14 +103,6 @@ class TrimButton extends Component {
     return Number(clamp(this.getPercent(), 0, 1).toFixed(4));
   }
 }
-
-/**
- * Call the update event for this Slider when this event happens on the player.
- *
- * @type {string}
- */
-TrimButton.prototype.startTrimPlayerEvent = 'starttrimchange';
-TrimButton.prototype.endTrimPlayerEvent = 'endtrimchange';
 
 Component.registerComponent('TrimButton', TrimButton);
 export default TrimButton;
