@@ -7,14 +7,15 @@ const axios = require('axios');
 import videojs from 'video.js';
 import {login} from '../auth/auth.js';
 
-class DummyEdit extends LitElement {
+class Edit extends LitElement {
   constructor() {
     super();
-    this.user_id = ''
-    this.youtube_url = ''
+    //this.user_id = ''
+    //this.youtube_url = ''
     this.video_id = ''
     this.editing = false
-    this.authenticated = false
+    //this.authenticated = false
+    this.error = ''
     this.backend_url = config.backend.protocol + "://" + config.backend.host + ":" + config.backend.port
     // set the socket listener so that UI is updated once video finishes downloading
     this.socket = document.querySelector('#my-app').socket
@@ -85,6 +86,7 @@ class DummyEdit extends LitElement {
           aboveVideo.commit()
           belowVideo.setValue(html`
             <div class="cs-footer">
+              <div>${this.error}</div>
               <button id="share_on_twitter" @click="${this.trim}" class="cs-app">finish</button>
             </div>
           `)
@@ -152,7 +154,9 @@ class DummyEdit extends LitElement {
       youtube_url: {type: String},
       video_id: {type: String},
       editing: {type: Boolean},
-      authenticated: {type: Boolean}
+      authenticated: {type: Boolean},
+      error: {type: String},
+      global_error: {type: Boolean}
     };
   }
 
@@ -175,7 +179,8 @@ class DummyEdit extends LitElement {
       console.log(response)
     })
     .catch( error => {
-      console.error(`Fatal error occurred: ${error}`)
+      console.log(`Fatal error occurred: ${error}`);
+      this.parentNode.global_error = true
     });
   }
 
@@ -196,19 +201,27 @@ class DummyEdit extends LitElement {
       console.log(response)
       this.editing = true
     }).catch(error => {
-      console.error(`Fatal error occurred: ${error}`)
+      console.log(`Fatal error occurred: ${error}`);
+      this.parentNode.global_error = true
     });
   }
 
   /*
   trim a video based on user defined start and end time
+  block trim if video is more than 2 minutes
   */
   trim(){
+    let player = videojs.getPlayer("my-player")
+    if((player.cache_.endTrimTime - player.cache_.startTrimTime)*player.duration() > 120){
+      console.log("video is too long !")
+      this.error = "Video is too long !"
+      return
+    }
     this.socket.on(this.socket.id + "-trim-finish", (arg) => {
       this.video_id = arg
       this.editing = false
+      this.error = ''
     });
-    let player = videojs.getPlayer("my-player")
     axios({
       method: 'post',
       url: this.backend_url + '/video/trim',
@@ -223,7 +236,8 @@ class DummyEdit extends LitElement {
     }).then(response => {
       console.log(response)
     }).catch(error => {
-      console.error(`Fatal error occurred: ${error}`)
+      console.log(`Fatal error occurred: ${error}`);
+      this.parentNode.global_error = true
     });
   }
 
@@ -246,12 +260,14 @@ class DummyEdit extends LitElement {
         }).then(response => {
           console.log(response)
         }).catch(error => {
-          console.log(error);
+          console.log(`Fatal error occurred: ${error}`);
+          this.parentNode.global_error = true
         });
 
       },
       error => {
-      console.log(`Error: ${error}`);
+        console.log(`Fatal error occurred: ${error}`);
+        this.parentNode.global_error = true
       }
     );
   };
@@ -309,6 +325,7 @@ class DummyEdit extends LitElement {
         }
       }).catch(error => {
         console.error(`Fatal error occurred: ${error}`)
+        this.parentNode.global_error = true
         reject(error)
       });
     });
@@ -329,4 +346,4 @@ class DummyEdit extends LitElement {
     return this;
   }
 }
-customElements.define('dummy-edit', DummyEdit);
+customElements.define('cs-edit', Edit);

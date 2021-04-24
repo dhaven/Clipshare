@@ -4,7 +4,7 @@ import {login} from '../auth/auth.js';
 var config = require('../config/config.js');
 const axios = require('axios');
 
-class DummyHeader extends LitElement {
+class Header extends LitElement {
   constructor() {
     super();
     this.authenticated = false
@@ -103,6 +103,8 @@ class DummyHeader extends LitElement {
           })
           .catch(function (error) {
             reject(error.toJSON())
+            console.log(`Fatal error occurred: ${error}`);
+            this.parentNode.global_error = true
           });
         });
       }else{
@@ -113,7 +115,7 @@ class DummyHeader extends LitElement {
   }
 
   render() {
-    console.log("dummy-header is rendering")
+    console.log("cs-header is rendering")
     return html`
       ${this.resolvePromise(this.selectProfilePic())}
     `;
@@ -127,4 +129,4 @@ class DummyHeader extends LitElement {
     return this;
   }
 }
-customElements.define('dummy-header', DummyHeader);
+customElements.define('cs-header', Header);
