@@ -1,80 +1,92 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const { DynamoDB } = require("@aws-sdk/client-dynamodb");
+const config = require('../config');
 
 //return a user object with matching user_id and video_url
 router.get('/', (req, res, _next) => {
-	let client = req.DBclient
-	client.connect()
-		.then(() => {
-			const users = req.DBclient.db('clipshare').collection('user');
-			const query = { _id: req.query.user_id, video_url: req.query.url};
-			users.findOne(query)
-				.then(response => { //should send a 404 if no user with specified id was found
-					res.json(response)
-					//client.close();
-				})
-				.catch(error => {
-					console.log('an error occured while finding the user')
-					console.error(`Fatal error occurred: ${error}`)
-					res.status(500).send(error);
-					//client.close();
-				});
-		})
-		.catch(error => {
-			console.error(`Fatal error occurred: ${error}`)
+	const client = new DynamoDB({ region: config.dynamodb.region });
+	var params = {
+		Key: {
+		 "user_id": {
+			 S: req.query.user_id
+			}
+		}, 
+		TableName: config.dynamodb.table
+	 };
+	 console.log("getting user info")
+	 client.getItem(params, function(err, data) {
+		 console.log("hello from callback")
+		 if (err){
+			console.log("there was some error")
+			console.log(err, err.stack); // an error occurred
 			res.status(500).send(error);
-			//client.close();
-		});
+		 }
+		 else if(!data.Item || !data.Item.video_url || data.Item.video_url.S != req.query.url){ //user has not yet downloaded a video or he switched to a new video
+			console.log(data);           // successful response
+			console.log("return user_id only")
+			res.json({
+				user_id: req.query.user_id,
+			})
+		 }else{
+			console.log("return full user item")
+			console.log(data);
+			 res.json(data.Item)
+		 }
+	 });
 });
 
 //create a new user in the db and returns its id to the frontend
 router.post('/', (req, res, _next) => {
 	let user_id = uuidv4()
-	req.DBclient.connect()
-		.then(() => {
-			const users = req.DBclient.db('clipshare').collection('user');
-			users.insertOne({ _id: user_id })
-				.then(response => {
-					res.send(user_id)
-					//req.DBclient.close();
-				}).catch(error => {
-					console.error(`Fatal error occurred: ${error}`)
-					//req.DBclient.close();
-				});
-		})
-		.catch(error => {
-			console.error(`Fatal error occurred: ${error}`)
-			res.status(500).send(error);
-			//req.DBclient.close();
-		});
+	const client = new DynamoDB({ region: config.dynamodb.region });
+	var params = {
+		Item: {
+		 "user_id": {
+			 S: user_id
+			}, 
+		}, 
+		ReturnConsumedCapacity: "TOTAL", 
+		TableName: config.dynamodb.table
+	 };
+	 client.putItem(params, function(err, data) {
+		 if (err){
+			 console.log(err, err.stack); // an error occurred
+			 res.status(500).send(error);
+		 }else{
+			console.log(data);           // successful response
+			res.send(user_id)
+		 } 
+	 });
 });
 
 router.post('/edit_active', (req, res, _next) => {
-	req.DBclient.connect()
-		.then(() => {
-			const users = req.DBclient.db('clipshare').collection('user');
-			users.updateOne({ _id: req.body.user_id},
-				{
-					$set: {
-						'edit.active': req.body.active,
-					},
-					$currentDate: { lastModified: true }
-				})
-				.then(response => {
-					res.json(response)
-					//req.DBclient.close();
-				})
-				.catch(error => {
-					console.error(`Fatal error occurred: ${error}`)
-					res.status(500).send(error);
-					//req.DBclient.close();
-				});
-		})
-		.catch(error => {
-			console.error(`Fatal error occurred: ${error}`)
-			res.status(500).send(error);
-		});
+	const client = new DynamoDB({ region: config.dynamodb.region });
+	var params = {
+		Key: {
+		 "user_id": {
+			 S: req.body.user_id
+			}
+		},
+		UpdateExpression: "SET edit.active = :active",
+		ExpressionAttributeValues: {
+			':active': {
+				BOOL: req.body.active,
+			}
+		},
+		ReturnConsumedCapacity: "TOTAL", 
+		TableName: config.dynamodb.table
+	 };
+	client.updateItem(params, function(err, data) {
+		if (err){
+			console.log(err, err.stack); // an error occurred
+			res.status(500).send(err);
+		}else{
+			console.log(data);           // successful response
+			res.send(data)
+		} 
+	});
 });
 
 module.exports = router;

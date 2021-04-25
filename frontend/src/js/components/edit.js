@@ -166,6 +166,7 @@ class Edit extends LitElement {
   fetch_video(){
     this.socket.on(this.socket.id + "-download-finish", (arg) => {
       this.video_id = arg;
+      console.log(arg)
     });
     axios({
       method: 'get',
@@ -254,7 +255,7 @@ class Edit extends LitElement {
         axios.post(this.backend_url + '/tweetvideo',{
           oauth_token: storedSettings.auth.oauth_token,
           oauth_token_secret: storedSettings.auth.oauth_token_secret,
-          video_id: storedSettings.video_id,
+          video_id: storedSettings.video_id, //remove and get the video_id for this user in the backend
           message: document.getElementById("editBox").value,
           ws: this.socket.id
         }).then(response => {
@@ -305,17 +306,18 @@ class Edit extends LitElement {
           url: this.youtube_url
         },
       }).then(response => {
-        if(!response.data || !('video_id' in response.data)){
+        console.log(response)
+        if(!response.data.video_id){
           resolve({state:"INIT"})
         }else{
-          if(response.data.edit.active){
-            let video_url = this.backend_url +'/'+response.data.video_id+'.mp4'
+          if(response.data.edit.M.active.BOOL){
+            let video_url = this.backend_url +'/'+response.data.video_id.S+'.mp4'
             resolve({state:"EDIT", video_url: video_url})
           }else{
             this.isAuthenticated()
               .then(isAuth =>{
                 if(isAuth){
-                  let video_url = this.backend_url +'/'+response.data.trimmed_video_id+'.mp4'
+                  let video_url = this.backend_url +'/'+response.data.trimmed_video_id.S+'.mp4'
                   resolve({state:"SUBMIT", video_url: video_url})
                 }else{
                   resolve({state:"FORCE LOGIN"})
