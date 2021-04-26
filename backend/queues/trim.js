@@ -1,7 +1,6 @@
 const path = require('path');
 const cp = require('child_process');
 const ffmpeg = require('ffmpeg-static');
-const { MongoClient } = require("mongodb");
 const config = require('../config');
 const { DynamoDB } = require("@aws-sdk/client-dynamodb");
 
@@ -45,12 +44,6 @@ module.exports = function(job){
           	M: {
           		"active": {
           			BOOL: false
-          		},
-          		"start": {
-          			N: "" + job.data.startPercent
-          		},
-          		"end": {
-          			N: "" + job.data.endPercent
           		}
           	}
           }

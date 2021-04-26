@@ -4,7 +4,16 @@ const { v4: uuidv4 } = require('uuid');
 const { DynamoDB } = require("@aws-sdk/client-dynamodb");
 const config = require('../config');
 
-//return a user object with matching user_id and video_url
+/*
+	return a user object with matching user_id and video_url
+	
+	Request Query params: 
+		user_id : String //the user's unique identifier
+		url: String //the video url the user is watching
+	returns: {
+		user_id: String
+	} || user_object
+*/
 router.get('/', (req, res, _next) => {
 	const client = new DynamoDB({ region: config.dynamodb.region });
 	var params = {
@@ -37,7 +46,14 @@ router.get('/', (req, res, _next) => {
 	 });
 });
 
-//create a new user in the db and returns its id to the frontend
+/*
+	create a new user in the db and returns its id to the frontend
+	
+	Request Query params: 
+		user_id : String //the user's unique identifier
+	returns: 
+		user_id: String
+*/
 router.post('/', (req, res, _next) => {
 	let user_id = uuidv4()
 	const client = new DynamoDB({ region: config.dynamodb.region });
@@ -61,6 +77,14 @@ router.post('/', (req, res, _next) => {
 	 });
 });
 
+/*
+	Updates editing progress to active or inactive
+	
+	Request post body: 
+		active : Boolean //true if the user is currently editing the video. False otherwise
+	returns: 
+		user_object
+*/
 router.post('/edit_active', (req, res, _next) => {
 	const client = new DynamoDB({ region: config.dynamodb.region });
 	var params = {

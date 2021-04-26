@@ -4,6 +4,17 @@ const { v4: uuidv4 } = require('uuid');
 const { DynamoDB } = require("@aws-sdk/client-dynamodb");
 const config = require('../config');
 
+/*
+	Adds a new item to the download queue.
+	
+	Request query params: 
+		url: String      //The youtube url where the video is located
+		ws: String       //The websocket on which to send the result after processing
+		user_id: String  //The user which requested the video
+	returns: {
+		message: 'video added to download queue'
+	}
+*/
 router.get('/', (req, res, _next) => {
 	 let video_id = uuidv4()
 	 req.queues.download.add('download_job',{
@@ -17,6 +28,18 @@ router.get('/', (req, res, _next) => {
 	 });
 });
 
+/*
+	Adds a new item to the trim queue.
+	
+	Request query params: 
+		user_id: String       //The user which requested to trim a video
+		startTime: String     //The time at which to start trimming
+		duration: String      //The length of the trimmed video
+		ws: String            //The websocket on which to send the result after processing
+	returns: {
+		message: 'video added to trim queue'
+	}
+*/
 router.post('/trim', (req, res, _next) => {
 	const client = new DynamoDB({ region: config.dynamodb.region });
 	var params = {
@@ -38,9 +61,7 @@ router.post('/trim', (req, res, _next) => {
         video_id: data.Item.video_id.S,
         trimmed_video_id: trimmed_video_id,
         startTime: req.body.startTime,
-        startPercent: req.body.startPercent,
         duration: req.body.duration,
-        endPercent: req.body.endPercent,
         ws: req.body.ws,
         user_id: req.body.user_id
       })

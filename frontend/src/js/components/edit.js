@@ -228,9 +228,7 @@ class Edit extends LitElement {
       url: this.backend_url + '/video/trim',
       data: {
         startTime: player.formatTrimStart(),
-        startPercent: player.startTrim(),
         duration: player.formatTrimDuration(),
-        endPercent: player.endTrim(),
         user_id: this.user_id,
         ws: this.socket.id
       }
