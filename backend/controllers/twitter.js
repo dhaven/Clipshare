@@ -167,7 +167,7 @@ class Twitter {
   init_upload(token,video_id){
     let url = 'https://upload.twitter.com/1.1/media/upload.json'
     let method = 'POST'
-    var mediaFilePath = path.join(__dirname,'../media',video_id, video_id+'-short.mp4');
+    var mediaFilePath = path.join(__dirname,'../media',video_id+'.mp4');
     var mediaType = mime.lookup(mediaFilePath);
     var mediaFileSizeBytes = fs.statSync(mediaFilePath).size;
     let data = {
@@ -196,7 +196,8 @@ class Twitter {
       let segment_id = 0
       let isStreamingCompleted = false
       let isUploading = false
-      var mediaFilePath = path.join(__dirname,'../media',video_id, video_id+'-short.mp4');
+      let media_path = path.join(__dirname,'../media')
+      var mediaFilePath = path.join(media_path,video_id+'.mp4');
       var mediaType = mime.lookup(mediaFilePath);
       var mediaFileSizeBytes = fs.statSync(mediaFilePath).size;
       const readStream = fs.createReadStream(mediaFilePath, {highWaterMark: 1024*1024});
@@ -288,11 +289,13 @@ class Twitter {
           if(response.data["processing_info"]["state"] == 'succeeded'){
             resolve(response)
           }else if(response.data["processing_info"]["state"] == 'failed'){
+            console.log(response.data.processing_info.error)
             reject(response)
           }else{
             setTimeout(wait_processing_complete, 1000);
           }
         }).catch(error => {
+          console.log(error)
           reject(error)
         })
       }

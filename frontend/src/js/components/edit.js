@@ -139,7 +139,7 @@ class Edit extends LitElement {
           belowVideo.setValue(html`
           <div class="cs-footer">
             <input id="editBox" type="text"></input>
-            <button id="tweet" class="cs-app">tweet</button>
+            <button id="tweet" class="cs-app" @click="${this.tweet}">tweet</button>
           </div>
           `)
           belowVideo.commit()
@@ -155,8 +155,7 @@ class Edit extends LitElement {
       video_id: {type: String},
       editing: {type: Boolean},
       authenticated: {type: Boolean},
-      error: {type: String},
-      global_error: {type: Boolean}
+      error: {type: String}
     };
   }
 
@@ -165,8 +164,11 @@ class Edit extends LitElement {
   */
   fetch_video(){
     this.socket.on(this.socket.id + "-download-finish", (arg) => {
-      this.video_id = arg;
-      console.log(arg)
+      if(arg.status == "success"){
+        this.video_id = arg.response;
+      }else{
+        this.parentNode.global_error = true;
+      }
     });
     axios({
       method: 'get',
@@ -219,9 +221,13 @@ class Edit extends LitElement {
       return
     }
     this.socket.on(this.socket.id + "-trim-finish", (arg) => {
-      this.video_id = arg
-      this.editing = false
-      this.error = ''
+      if(arg.status == "success"){
+        this.video_id = arg.response
+        this.editing = false
+        this.error = ''
+      }else{
+        this.parentNode.global_error = true;
+      }
     });
     axios({
       method: 'post',
@@ -245,17 +251,21 @@ class Edit extends LitElement {
   */
   tweet(){
     this.socket.on(this.socket.id + "-tweet-finish", (arg) => {
-      console.log("update UI because received confirmation that video was tweeted")
+      if(arg.status == "success"){
+        console.log("update UI because received confirmation that video was tweeted")
+      }else{
+        this.parentNode.global_error = true
+      }
     });
     const gettingStoredSettings = browser.storage.local.get();
     gettingStoredSettings.then(
       storedSettings => {
-        axios.post(this.backend_url + '/tweetvideo',{
+        axios.post(this.backend_url + '/tweet',{
           oauth_token: storedSettings.auth.oauth_token,
           oauth_token_secret: storedSettings.auth.oauth_token_secret,
-          video_id: storedSettings.video_id, //remove and get the video_id for this user in the backend
           message: document.getElementById("editBox").value,
-          ws: this.socket.id
+          ws: this.socket.id,
+          user_id: this.user_id
         }).then(response => {
           console.log(response)
         }).catch(error => {

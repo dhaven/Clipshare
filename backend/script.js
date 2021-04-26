@@ -21,24 +21,27 @@ const tweetQueue = new Bullmq.Queue('tweet video',{ connection });
 const downloadWorker = new Bullmq.Worker('video download', processDownload, { connection });
 downloadWorker.on("completed", (job, response) => {
   console.log("emitting video success to frontend socket with id : " + job.data.ws)
-  io.emit(job.data.ws + "-download-finish", response);
+  io.emit(job.data.ws + "-download-finish", {status: "success",response: response});
 });
 downloadWorker.on("failed", (job, failedReason) => {
   console.log(`Job ${job} failed : ${failedReason}`)
+  io.emit(job.data.ws + "-download-finish", {status: "failed",response: failedReason});
 });
 const trimWorker = new Bullmq.Worker('trim video', processTrim, { connection });
 trimWorker.on("completed", (job, response) => {
-  io.emit(job.data.ws + "-trim-finish", response);
+  io.emit(job.data.ws + "-trim-finish", {status: "success",response: response});
 });
 trimWorker.on("failed", (job, failedReason) => {
   console.log(`Job ${job} failed : ${failedReason}`)
+  io.emit(job.data.ws + "-trim-finish", {status: "failed",response: failedReason});
 });
 const tweetWorker = new Bullmq.Worker('tweet video', processTweet, { connection });
 tweetWorker.on("completed", (job, response) => {
-  io.emit(job.data.ws + "-tweet-finish", 'tweet success');
+  io.emit(job.data.ws + "-tweet-finish", {status: "success",response: response});
 });
 tweetWorker.on("failed", (job, failedReason) => {
-  console.log(`Job ${job} failed : ${failedReason}`)
+  //console.log(`Job ${job} failed : ${failedReason}`)
+  io.emit(job.data.ws + "-tweet-finish", {status: "failed",response: failedReason});
 });
 
 const cors = require('cors');

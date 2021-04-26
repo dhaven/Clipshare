@@ -20,7 +20,7 @@ class App extends LitElement {
         if(resolvedValue && !this.global_error){ //we are currently on a youtube page
           part.setValue(html`
           <cs-header .authenticated="${this.authenticated}"></cs-header>
-          <cs-edit id="cs-edit" .user_id="${this.user_id}" .youtube_url="${this.youtube_url}" .authenticated="${this.authenticated}" .global_error="${this.global_error}"></cs-edit>`
+          <cs-edit id="cs-edit" .user_id="${this.user_id}" .youtube_url="${this.youtube_url}" .authenticated="${this.authenticated}"></cs-edit>`
           );
           part.commit();
         }else if(this.global_error){ //some unexpected error occured
