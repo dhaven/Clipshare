@@ -319,13 +319,13 @@ class Edit extends LitElement {
           resolve({state:"INIT"})
         }else{
           if(response.data.edit.M.active.BOOL){
-            let video_url = this.backend_url +'/'+response.data.video_id.S+'.mp4'
+            let video_url = config.cloudfront + '/raw/' + response.data.video_id.S + '.mp4'
             resolve({state:"EDIT", video_url: video_url})
           }else{
             this.isAuthenticated()
               .then(isAuth =>{
                 if(isAuth){
-                  let video_url = this.backend_url +'/'+response.data.trimmed_video_id.S+'.mp4'
+                  let video_url = config.cloudfront + '/edit/' + response.data.trimmed_video_id.S + '.mp4'
                   resolve({state:"SUBMIT", video_url: video_url})
                 }else{
                   resolve({state:"FORCE LOGIN"})

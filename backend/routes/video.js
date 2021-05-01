@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const { DynamoDB } = require("@aws-sdk/client-dynamodb");
-const config = require('../config');
 
 /*
 	Adds a new item to the download queue.
@@ -31,7 +29,7 @@ router.get('/', (req, res, _next) => {
 /*
 	Adds a new item to the trim queue.
 	
-	Request query params: 
+	Request body: 
 		user_id: String       //The user which requested to trim a video
 		startTime: String     //The time at which to start trimming
 		duration: String      //The length of the trimmed video
@@ -41,21 +39,8 @@ router.get('/', (req, res, _next) => {
 	}
 */
 router.post('/trim', (req, res, _next) => {
-	const client = new DynamoDB({ region: config.dynamodb.region });
-	var params = {
-		Key: {
-		 "user_id": {
-			 S: req.body.user_id
-			}
-		}, 
-		TableName: config.dynamodb.table
-	 };
-	client.getItem(params, function(err, data) {
-		if (err){
-			console.log(err, err.stack); // an error occurred
-			res.status(500).send(error);
-		}else{
-			console.log(data)
+	req.aws.dynamoDB_get_user(req.body.user_id)
+		.then(data => {
 			let trimmed_video_id = uuidv4()
       req.queues.trim.add('trim_job',{
         video_id: data.Item.video_id.S,
@@ -68,7 +53,10 @@ router.post('/trim', (req, res, _next) => {
       res.json({
         message: 'video added to trim queue'
       });
-		}
-	});
+		})
+		.catch(error => {
+			console.log(error); // an error occurred
+			res.status(500).send(error);
+		})
 });
 module.exports = router;

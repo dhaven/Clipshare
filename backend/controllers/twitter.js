@@ -127,17 +127,15 @@ class Twitter {
     return axios(config);
   }
 
-  tweet_video(token,video_id,message){
+  tweet_video(token,mp_source_video,message){
     //start with upload media file
-    console.log("working on tweet")
-    console.log(token,video_id)
+    console.log(`trying to tweet media ${mp_source_video}`)
     let promise = new Promise((resolve,reject) => {
-      this.init_upload(token,video_id)
+      this.init_upload(token,mp_source_video)
       .then(response => {
-        console.log(response)
         //if init was successful we should have access to a media_string
         //upload the media chunk by chunk
-         return this.upload_media(token,response.data['media_id_string'],video_id)
+         return this.upload_media(token,response.data['media_id_string'],mp_source_video)
       })
       .then(media_id => {
         //finalize the media upload
@@ -164,43 +162,32 @@ class Twitter {
   }
 
   // Initialize twitter media upload and returns the media_id associated with the video
-  init_upload(token,video_id){
+  init_upload(token,mp_source_video){
     let url = 'https://upload.twitter.com/1.1/media/upload.json'
     let method = 'POST'
-    var mediaFilePath = path.join(__dirname,'../media',video_id+'.mp4');
-    var mediaType = mime.lookup(mediaFilePath);
-    var mediaFileSizeBytes = fs.statSync(mediaFilePath).size;
+    var mediaType = mime.lookup(mp_source_video);
+    var mediaFileSizeBytes = fs.statSync(mp_source_video).size;
     let data = {
       command: 'INIT',
       media_type: mediaType,
       total_bytes: mediaFileSizeBytes,
       media_category: 'tweet_video'
     }
+    console.log(`INIT data is mediaType: ${mediaType} and total_bytes: ${mediaFileSizeBytes}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'
     }
     return this.api_request(url,method,headers,data)
-    // try {
-    //   const response = await this.api_request(url,method,headers,data);
-    //   //return response to calling function
-    //   this.upload_media(token,response.data['media_id_string'])
-    // } catch (error) {
-    //   console.error(error);
-    // }
   }
 
-  upload_media(token,media_id,video_id){
+  upload_media(token,media_id,mp_source_video){
     let promise = new Promise((resolve,reject) => {
       console.log("starting upload of media")
       let segment_id = 0
       let isStreamingCompleted = false
       let isUploading = false
-      let media_path = path.join(__dirname,'../media')
-      var mediaFilePath = path.join(media_path,video_id+'.mp4');
-      var mediaType = mime.lookup(mediaFilePath);
-      var mediaFileSizeBytes = fs.statSync(mediaFilePath).size;
-      const readStream = fs.createReadStream(mediaFilePath, {highWaterMark: 1024*1024});
+      const readStream = fs.createReadStream(mp_source_video, {highWaterMark: 1024*1024});
       readStream.on('data', async chunk => {
         //should also catch errors on reading the stream
         readStream.pause();
@@ -217,6 +204,7 @@ class Twitter {
             readStream.resume();
           }else {
             console.log("the upload request was unsuccessful")
+            reject(error)
           }
         }).catch(error => {
           reject(error)
@@ -242,6 +230,7 @@ class Twitter {
       segment_index: segment_id,
       media: chunk
     }
+    console.log(`Uploading media chunk ${segment_id} for media: ${media_id}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -257,6 +246,7 @@ class Twitter {
       command: 'FINALIZE',
       media_id: media_id
     }
+    console.log(`Calling FINALIZE for media: ${media_id}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'

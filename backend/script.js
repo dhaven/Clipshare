@@ -7,8 +7,12 @@ const processTrim = require('./queues/trim.js');
 const processTweet = require('./queues/tweet.js');
 var IORedis = require('ioredis');
 
+//load helper library for interacting with Twitter
 const Twitter = require('./controllers/twitter.js');
 const T = new Twitter(config.twitter.consumer_key,config.twitter.consumer_key_secret)
+//load helper library for interacting with AWS
+const AWSLib = require('./controllers/aws.js')
+const AWS = new AWSLib(config)
 
 const connection = new IORedis({
   host: config.redis.host,
@@ -70,6 +74,7 @@ app.use(function (req, res, next) {
     tweet: tweetQueue,
   }
   req.twitter = T
+  req.aws = AWS
   next();
 });
 
