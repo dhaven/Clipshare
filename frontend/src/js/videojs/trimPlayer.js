@@ -95,7 +95,7 @@ export default function createPlayer(id, options, ready){
   let player = videojs.getPlayer(id);
   if (player) {
     if (options) {
-      log.warn(`Player "${id}" is already initialised. Options will not be applied.`);
+      console.log(`Player "${id}" is already initialised. Options will not be applied.`);
     }
     if (ready) {
       player.ready(ready); //ready is a callback that will be called once the player is ready

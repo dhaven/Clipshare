@@ -20,6 +20,7 @@ router.post('/', (req, res, _next) => {
         secret: req.body.oauth_token_secret,
       }
 			req.queues.tweet.add('tweet_job',{
+				user_id: req.body.user_id,
         token: token,
         video_id: data.Item.trimmed_video_id.S,
         ws: req.body.ws,

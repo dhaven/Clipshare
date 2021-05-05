@@ -19,7 +19,18 @@ module.exports = function(job){
 							if (err) throw err;
 							console.log(`successfully deleted ${mp_source_video} from local storage`);
 						});
-            resolve(data)
+            //3. Update DB with result of tweet
+            let text_str = data.text.split(" ")
+            let tweet_url = text_str[text_str.length -1]
+            console.log(tweet_url)
+            AWS.dynamoDB_put_tweet(job.data.user_id, tweet_url)
+              .then(data => {
+                resolve(data)
+              })
+              .catch(error => {
+                console.log(error); // an error occurred
+				        reject(error)
+              })
           })
           .catch(error => {
             console.log(error); // an error occurred

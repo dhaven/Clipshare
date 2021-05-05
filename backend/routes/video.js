@@ -15,6 +15,7 @@ const { v4: uuidv4 } = require('uuid');
 */
 router.get('/', (req, res, _next) => {
 	 let video_id = uuidv4()
+	 console.log(req.query)
 	 req.queues.download.add('download_job',{
 		 uuid: video_id,
 		 url: req.query.url,

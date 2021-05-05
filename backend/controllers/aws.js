@@ -180,6 +180,25 @@ class AWS {
 		};
 		return this.dynamoDBClient.send(new UpdateItemCommand(params))
 	}
+
+	dynamoDB_put_tweet(user_id, tweet_url){
+		var params = {
+			Key: {
+			"user_id": {
+				S: user_id
+				}
+			},
+			ExpressionAttributeValues: {
+				":tweet_url": {
+					S: tweet_url
+				}
+			}, 
+			ReturnConsumedCapacity: "TOTAL", 
+			TableName: this.config.dynamodb.table,
+			UpdateExpression: "SET tweet_url = :tweet_url"
+		};
+		return this.dynamoDBClient.send(new UpdateItemCommand(params))
+	}
 }
 
 module.exports = AWS;

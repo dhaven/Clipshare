@@ -1,20 +1,6 @@
 @font-face {
-  font-family: "Quicksand";
-  src: url("/fonts/quicksand-regular-webfont.woff2") format("woff2"),
-       url("/fonts/quicksand-regular-webfont.woff") format("woff");
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-:root {
-  --input-border: #8b8a8b;
-  --input-focus-h: 245;
-  --input-focus-s: 100%;
-  --input-focus-l: 42%;
+  font-family: "Nunito";
+  src: url("/fonts/Nunito-Regular.ttf") format("truetype");
 }
 
 
@@ -49,7 +35,7 @@
   right: -.19em;
   position: absolute;
   font-size: 1.4em;
-  color: red;
+  color: #ffc107;
 }
 
 .vjs-trim-end:before {
@@ -58,7 +44,7 @@
   right: -.9em;
   position: absolute;
   font-size: 1.4em;
-  color: red;
+  color: #ffc107;
 }
 
 .vjs-trim-control { /* vjs-volume-control */
@@ -161,9 +147,8 @@ APP UI LAYOUT
 
 .cs-banner {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   padding: 5px;
-  align-items: center;
 }
 
 .cs-body {
@@ -176,38 +161,199 @@ APP UI LAYOUT
   padding: 5px;
   flex-direction: column;
 }
+.cs-footer-tweet {
+  flex-direction: column;
+  background-color: lightgrey;
+  border-radius: .3rem;
+}
 
-button.cs-app {
+.cs-button {
   border: none;
   background-color: transparent;
-  font-family: "Quicksand", sans-serif;
-  padding: 0;
+  font-family: 'Nunito', sans-serif;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #3e68ff;
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.25em 0.75em;
-  min-width: 5ch;
-  min-height: 22px;
+  background-color: #ffc107;
+  color: black;
+  border-radius: .3rem;
+  border: 1px solid transparent;
   text-align: center;
-  line-height: 1.1;
   font-size:large;
-  transition: 220ms all ease-in-out;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
-button.cs-app:hover {
-  background-color: hsl(var(--input-focus-h), var(--input-focus-s), calc(var(--input-focus-l) + 10%));
+.cs-tweet-button {
+  width: 25%;
+  align-self: end;
 }
 
-button.cs-app:focus {
-  outline-style: solid;
-  outline-color: transparent;
-  box-shadow: 0 0 0 4px hsl(var(--input-focus-h), var(--input-focus-s), calc(var(--input-focus-l) + 30%));
+.cs-button:hover {
+  background-color: #e0a800;
+  border-color: #e0a800;
 }
 
-button.cs-app:active {
-  background-color: hsl(var(--input-focus-h), var(--input-focus-s), calc(var(--input-focus-l) - 10%));
+.cs-button:active {
+  background-color: #c69500;
+  border-color: #c69500;
+  box-shadow: 0 0 0 .2rem rgba(255,193,7,.5);
+}
+
+.cs-welcome-container {
+  display: flex;
+  flex-direction: column;
+  margin: 25px;
+  border: 2px solid #ffc107;
+  border-radius: 15px;
+}
+
+.cs-welcome-item {
+  align-self: center;
+  margin: 10px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.cs-edit-start-container {
+  display: flex;
+  flex-direction: column;
+  margin: 25px;
+}
+
+.cs-edit-start-item {
+  align-self: center;
+  margin: 10px;
+}
+
+.cs-error-container {
+  display: flex;
+  flex-direction: column;
+  margin: 25px;
+  border: 2px solid #ffc107;
+  border-radius: 15px;
+}
+
+.cs-error-item {
+  align-self: center;
+  margin: 10px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.cs-edit-trim-container {
+  display: flex;
+  flex-direction: column;
+  margin: 25px;
+}
+
+.cs-edit-trim-item {
+  align-self: center;
+  margin: 10px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.cs-tweet-link {
+  padding: 5px;
+  text-decoration: none;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ffc107;
+  padding: 0;
+}
+
+.cs-button-back {
+  color: #ffc107;
+  border-radius: .3rem;
+  background-color: white;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: center;
+  font-size:large;
+  margin-left: 5px;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.cs-button-back:hover {
+  background-color: #dddddd;
+  border-color: #dddddd;
+}
+
+.cs-button-back:active {
+  background-color: #f0cf6dc4;
+  border-color: #f0cf6dc4;
+  box-shadow: 0 0 0 .2rem rgba(230, 196, 105, 0.5);
+}
+
+.cs-input {
+  background-color: lightgrey;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  cursor: text;
+  font-size: medium;
+  border-radius: .3rem;
+  padding: 5px;
+  resize: none;
+}
+
+.cs-input:hover, .cs-input:focus-visible{
+  background-color: #dddddd;
+  border-color: #dddddd;
+  outline: none;
+}
+
+.cs-error-long-video {
+  font-family: 'Nunito', sans-serif;
+  color: #DC281E;
+  padding: 5px;
+}
+
+cs-loading {
+  display: flex;
+  flex-direction: column;
+  margin: 25px;
+}
+
+.cs-loading-message {
+  align-self: center;
+  margin-top: 25px;
+  font-family: 'Nunito', sans-serif;
+  font-size: large;
+}
+.cs-dual-ring {
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  align-self: center;
+}
+.cs-dual-ring:after {
+  align-self: center;
+  content: " ";
+  display: block;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 6px solid #e0a800;
+  border-color: #e0a800 transparent #e0a800 transparent;
+  animation: cs-dual-ring 1.2s linear infinite;
+}
+@keyframes cs-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.cs-submit-row {
+  display: flex;
+  margin: 5px;
+  justify-content: space-between;
+  padding: 5px;
+}
+.word-count {
+  align-self: center;
+  font-size: medium;
+  font-family: 'Nunito', sans-serif;
 }

@@ -123,13 +123,11 @@ class Twitter {
       headers: headers,
       params: params
     };
-    console.log(config)
     return axios(config);
   }
 
   tweet_video(token,mp_source_video,message){
     //start with upload media file
-    console.log(`trying to tweet media ${mp_source_video}`)
     let promise = new Promise((resolve,reject) => {
       this.init_upload(token,mp_source_video)
       .then(response => {
@@ -139,20 +137,18 @@ class Twitter {
       })
       .then(media_id => {
         //finalize the media upload
-        console.log("got a response from upload media")
         return this.finalize(token,media_id)
       })
       .then(response => {
          //wait for video to finish processing
-         console.log("finalize command was succesfully send")
          return this.watch_upload_progress(token,response.data['media_id_string'])
       })
       .then(response => {
-        console.log("video was successfully processed")
         return this.tweet_with_video(token,response.data['media_id_string'],message)
       })
       .then(response => {
-        resolve('tweet was successfully sent')
+        console.log(response.data)
+        resolve(response.data)
       })
       .catch(error => {
         reject(error)
@@ -173,7 +169,6 @@ class Twitter {
       total_bytes: mediaFileSizeBytes,
       media_category: 'tweet_video'
     }
-    console.log(`INIT data is mediaType: ${mediaType} and total_bytes: ${mediaFileSizeBytes}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -194,8 +189,6 @@ class Twitter {
         isUploading = true
         this.upload_media_chunk(token,media_id,chunk.toString('base64'),segment_id).then(response => {
           if(isStreamingCompleted){
-            console.log("end off stream event happened already but finalize was not called because isUploading still to true")
-            console.log("call the finalize function now in that case")
             resolve(media_id)
           }
           isUploading = false
@@ -203,7 +196,6 @@ class Twitter {
             segment_id += 1;
             readStream.resume();
           }else {
-            console.log("the upload request was unsuccessful")
             reject(error)
           }
         }).catch(error => {
@@ -213,7 +205,6 @@ class Twitter {
       .on('end', function() {
         isStreamingCompleted = true;
         if(!isUploading){ //
-          console.log("call the finalize function now")
           resolve(media_id)
         }
       });
@@ -230,7 +221,6 @@ class Twitter {
       segment_index: segment_id,
       media: chunk
     }
-    console.log(`Uploading media chunk ${segment_id} for media: ${media_id}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -246,7 +236,6 @@ class Twitter {
       command: 'FINALIZE',
       media_id: media_id
     }
-    console.log(`Calling FINALIZE for media: ${media_id}`)
     let headers = {
       'Authorization': this.get_oauth_authorization_header(url,method,data,token),
       'Content-Type': 'application/x-www-form-urlencoded'

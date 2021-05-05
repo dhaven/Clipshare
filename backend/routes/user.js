@@ -30,6 +30,25 @@ router.get('/', (req, res, _next) => {
 		})
 });
 
+//return all of the user's data
+router.get('/data', (req, res, _next) => {
+	req.aws.dynamoDB_get_user(req.query.user_id)
+		.then(data => {
+			//user has not yet downloaded a video or he switched to a new video
+			if(!data.Item || !data.Item.video_url){
+				res.json({
+					user_id: req.query.user_id,
+				})
+			}else{ //return full user data so that user can resume where he left off
+				res.json(data.Item)
+			}
+		})
+		.catch(error => {
+			console.log(error); // an error occurred
+			res.status(500).send(error);
+		})
+});
+
 /*
 	create a new user in the db and returns its id to the frontend
 	
