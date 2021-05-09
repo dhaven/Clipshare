@@ -1,12 +1,13 @@
 {
-  "name": "webpack-babel-test",
+  "name": "clipshare",
   "version": "1.0.0",
-  "description": "test compile",
+  "description": "clip videos and share on youtube",
   "main": "main.js",
   "scripts": {
     "build:dev": "webpack --env NODE_ENV=dev --config webpack.config.js",
     "build:prod": "webpack --env NODE_ENV=prod --config webpack.config.js",
-    "build:dev:bs": "webpack --env NODE_ENV=dev --config webpack-background-script.config.js"
+    "build:dev:bs": "webpack --env NODE_ENV=dev --config webpack-background-script.config.js",
+    "build:prod:bs": "webpack --env NODE_ENV=prod --config webpack-background-script.config.js"
   },
   "author": "dhaven",
   "license": "ISC",
@@ -27,6 +28,7 @@
     "babel-polyfill": "^6.26.0",
     "lit-element": "^2.4.0",
     "lit-html": "^1.3.0",
-    "socket.io-client": "^3.1.1"
+    "socket.io-client": "^3.1.1",
+    "twitter-text": "^3.1.0"
   }
 }

@@ -111,45 +111,31 @@ class AWS {
 
 	/*
 		Update user with info from recently downloaded video
+		use "put" method to override any previous data from this user
 	*/
 	dynamoDB_update_video(user_id, video_id, video_url){
-		var params = {
-			ExpressionAttributeNames: {
-			 "#V_ID": "video_id", 
-			 "#V_URL": "video_url",
-			 "#EDIT": "edit"
-			}, 
-			ExpressionAttributeValues: {
-			 ":v_id": {
-				 S: video_id
+		var params = { 
+			Item: {
+				"user_id": {
+					S: user_id
+				 },
+			 	"video_id": {
+				 	S: video_id
 				}, 
-			 ":v_url": {
+			 "video_url": {
 				 S: video_url
 				},
-			 ":edit": {
+			 "edit": {
 				 M: {
 					 "active": {
 						 BOOL: true
-					 },
-					 "start": {
-						N: "0.0"
-					 },
-					 "end": {
-						N: "1.0"
 					 }
 				 }
 			 }
-			}, 
-			Key: {
-			 "user_id": {
-				 S: user_id
-				}
-			}, 
-			ReturnValues: "ALL_NEW", 
-			TableName: this.config.dynamodb.table, 
-			UpdateExpression: "SET #V_ID = :v_id, #V_URL = :v_url, #EDIT = :edit"
+			},
+			TableName: this.config.dynamodb.table
 		 };
-		 return this.dynamoDBClient.send(new UpdateItemCommand(params))
+		 return this.dynamoDBClient.send(new PutItemCommand(params))
 	}
 
 	/*

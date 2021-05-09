@@ -1,9 +1,9 @@
 {
 
   "manifest_version": 2,
-  "name": "Snippy",
+  "name": "Clipshare",
   "version": "1.0",
-  "description": "Snip clips and share on social media",
+  "description": "Clip and share",
   "permissions": [
     "tabs",
     "http://*/*",
@@ -11,16 +11,17 @@
     "storage"
   ],
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "icons/logo-48.svg",
+    "96": "icons/logo-96.svg"
   },
   "browser_action": {
-    "default_icon": "icons/beasts-32.png",
-    "default_title": "Snip clips",
+    "default_icon": "icons/logo-48.svg",
+    "default_title": "Clip and share",
     "default_popup": "popup/choose_video.html"
   },
   "content_scripts": [
     {
-      "matches": ["http://localhost/authorized*"],
+      "matches": ["https://www.clipshare.xyz/auth/authorized*"],
       "js": ["content_scripts/read_token.js"]
     }
   ],

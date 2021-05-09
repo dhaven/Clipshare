@@ -1,16 +1,15 @@
 import { LitElement, html } from 'lit-element';
-import {directive} from 'lit-html';
+import { directive } from 'lit-html';
 import './edit.js';
 import './welcome.js';
 import './header.js';
 import './error.js';
 import './loading.js';
 import './start_edit.js';
-import './edit.js';
 import './login.js';
 import './submit.js';
 import './tweet_result.js';
-import {io} from "socket.io-client";
+import { io } from "socket.io-client";
 import videojs from 'video.js';
 import createPlayer from '../videojs/trimPlayer.js';
 var config = require('../config/config.js');
@@ -173,10 +172,6 @@ class App extends LitElement {
       }
     });
     let player = videojs.getPlayer("my-player")
-    if((player.cache_.endTrimTime - player.cache_.startTrimTime)*player.duration() > 120){
-      this.error = "Video cannot be more than 2m20s"
-      return
-    }
     axios({
       method: 'post',
       url: this.backend_url + '/video/trim',

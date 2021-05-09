@@ -14,7 +14,8 @@ module.exports = (env) => {
           test: /\.js?$/,
           exclude: /node_modules/,
           include: [
-            path.resolve(__dirname, 'src/js/videojs')
+            path.resolve(__dirname, 'src/js/videojs'),
+            path.resolve(__dirname, 'src/js/components'),
           ],
           use: {
             loader: "babel-loader",

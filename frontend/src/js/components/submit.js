@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+import { parseTweet } from '../twitter/twitter-text-3.1.0.js';
 
 class Submit extends LitElement {
 
@@ -25,7 +26,7 @@ class Submit extends LitElement {
 									@keyup="${this.count_chars}"></textarea>
 				<div class="cs-submit-row">
 					<div id="wordCount" class="word-count"></div>
-					<button class="cs-button cs-tweet-button" id="tweet" class="cs-app" @click="${this.tweet}">tweet</button>
+					<button class="cs-button cs-tweet-button" id="tweet" class="cs-app" @click="${this.check_length_tweet}">tweet</button>
 				</div>
 			</div>
     `;
@@ -40,12 +41,29 @@ class Submit extends LitElement {
 	count_chars(){
 		let cntfield = document.getElementById("editBox")
 		let wordCount = document.getElementById("wordCount")
-		if (cntfield.value.length > 20){
-			wordCount.innerHTML = cntfield.value.length
+		let maxLength = 280
+		let parsedTweet = parseTweet(cntfield.value);
+		if (parsedTweet.weightedLength > maxLength){
 			wordCount.style.color = 'red'
+			wordCount.innerHTML = parsedTweet.weightedLength
+			return false
+		}
+		else if(parsedTweet.weightedLength > maxLength / 2){
+			wordCount.innerHTML = parsedTweet.weightedLength + " / " + maxLength
+			wordCount.style.color = 'black'
 		}
 		else{
-			wordCount.innerHTML = cntfield.value.length
+			wordCount.innerHTML = ""
+			wordCount.style.color = 'black'
+		}
+		return true;
+	}
+
+	check_length_tweet(){
+		if(this.count_chars()){
+			this.tweet()
+		}else{
+			return
 		}
 	}
 

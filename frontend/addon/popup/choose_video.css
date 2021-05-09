@@ -35,7 +35,7 @@
   right: -.19em;
   position: absolute;
   font-size: 1.4em;
-  color: #ffc107;
+  color: #FFA13B;
 }
 
 .vjs-trim-end:before {
@@ -44,7 +44,7 @@
   right: -.9em;
   position: absolute;
   font-size: 1.4em;
-  color: #ffc107;
+  color: #FFA13B;
 }
 
 .vjs-trim-control { /* vjs-volume-control */
@@ -163,7 +163,7 @@ APP UI LAYOUT
 }
 .cs-footer-tweet {
   flex-direction: column;
-  background-color: lightgrey;
+  background-color: #D5EBF7;
   border-radius: .3rem;
 }
 
@@ -172,7 +172,7 @@ APP UI LAYOUT
   background-color: transparent;
   font-family: 'Nunito', sans-serif;
   cursor: pointer;
-  background-color: #ffc107;
+  background-color: #FFA13B;
   color: black;
   border-radius: .3rem;
   border: 1px solid transparent;
@@ -187,13 +187,13 @@ APP UI LAYOUT
 }
 
 .cs-button:hover {
-  background-color: #e0a800;
-  border-color: #e0a800;
+  background-color: #E89248;
+  border-color: #E89248;
 }
 
 .cs-button:active {
-  background-color: #c69500;
-  border-color: #c69500;
+  background-color: #C97F3E;
+  border-color: #C97F3E;
   box-shadow: 0 0 0 .2rem rgba(255,193,7,.5);
 }
 
@@ -201,7 +201,7 @@ APP UI LAYOUT
   display: flex;
   flex-direction: column;
   margin: 25px;
-  border: 2px solid #ffc107;
+  border: 2px solid #f34f1d;
   border-radius: 15px;
 }
 
@@ -226,7 +226,7 @@ APP UI LAYOUT
   display: flex;
   flex-direction: column;
   margin: 25px;
-  border: 2px solid #ffc107;
+  border: 2px solid #f34f1d;
   border-radius: 15px;
 }
 
@@ -257,12 +257,12 @@ hr {
   display: block;
   height: 1px;
   border: 0;
-  border-top: 1px solid #ffc107;
+  border-top: 1px solid #FFA13B;
   padding: 0;
 }
 
 .cs-button-back {
-  color: #ffc107;
+  color: #FFA13B;
   border-radius: .3rem;
   background-color: white;
   font-family: 'Nunito', sans-serif;
@@ -286,7 +286,7 @@ hr {
 }
 
 .cs-input {
-  background-color: lightgrey;
+  background-color: #D5EBF7;
   border: none;
   font-family: 'Nunito', sans-serif;
   cursor: text;
@@ -297,14 +297,14 @@ hr {
 }
 
 .cs-input:hover, .cs-input:focus-visible{
-  background-color: #dddddd;
-  border-color: #dddddd;
+  background-color: #D5EBF7;
+  border-color: #D5EBF7;
   outline: none;
 }
 
 .cs-error-long-video {
   font-family: 'Nunito', sans-serif;
-  color: #DC281E;
+  color: #f34f1d;
   padding: 5px;
 }
 
@@ -333,8 +333,8 @@ cs-loading {
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  border: 6px solid #e0a800;
-  border-color: #e0a800 transparent #e0a800 transparent;
+  border: 6px solid #FFA13B;
+  border-color: #FFA13B transparent #FFA13B transparent;
   animation: cs-dual-ring 1.2s linear infinite;
 }
 @keyframes cs-dual-ring {
@@ -348,7 +348,6 @@ cs-loading {
 
 .cs-submit-row {
   display: flex;
-  margin: 5px;
   justify-content: space-between;
   padding: 5px;
 }

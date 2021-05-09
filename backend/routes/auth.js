@@ -75,4 +75,9 @@ router.post('/profile', (req, res, _next) => {
 		})
 });
 
+//callback from twitter
+router.get('/authorized', (req, res, _next) => {
+  res.status(200).send("authorized")
+});
+
 module.exports = router;

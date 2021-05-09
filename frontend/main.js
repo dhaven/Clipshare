@@ -1,4 +1,3 @@
-const axios = require('axios');
 import './src/js/components/app.js';
 
 browser.runtime.onMessage.addListener((message,sender) => {
