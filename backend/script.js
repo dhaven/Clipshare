@@ -6,6 +6,23 @@ const processDownload = require('./queues/download.js');
 const processTrim = require('./queues/trim.js');
 const processTweet = require('./queues/tweet.js');
 var IORedis = require('ioredis');
+const { createLogger, format, transports } = require('winston');
+
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json()
+  ),
+  defaultMeta: { service: 'clipshare' },
+  transports: [
+    new transports.Console({format: format.simple()})
+  ],
+});
 
 //load helper library for interacting with Twitter
 const Twitter = require('./controllers/twitter.js');
@@ -24,27 +41,32 @@ const tweetQueue = new Bullmq.Queue('tweet video',{ connection });
 
 const downloadWorker = new Bullmq.Worker('video download', processDownload, { connection });
 downloadWorker.on("completed", (job, response) => {
-  console.log("emitting video success to frontend socket with id : " + job.data.ws)
+  logger.info(`Download job was successful with response ${response}`)
   io.emit(job.data.ws + "-download-finish", {status: "success",response: response});
 });
 downloadWorker.on("failed", (job, failedReason) => {
-  console.log(`Job ${job} failed : ${failedReason}`)
+  logger.error(`Failed download job`)
+	logger.error(failedReason);
   io.emit(job.data.ws + "-download-finish", {status: "failed",response: failedReason});
 });
 const trimWorker = new Bullmq.Worker('trim video', processTrim, { connection });
 trimWorker.on("completed", (job, response) => {
+  logger.info(`Trim job was successful with response ${response}`)
   io.emit(job.data.ws + "-trim-finish", {status: "success",response: response});
 });
 trimWorker.on("failed", (job, failedReason) => {
-  console.log(`Job ${job} failed : ${failedReason}`)
+  logger.error(`Failed trim job`)
+	logger.error(failedReason);
   io.emit(job.data.ws + "-trim-finish", {status: "failed",response: failedReason});
 });
 const tweetWorker = new Bullmq.Worker('tweet video', processTweet, { connection });
 tweetWorker.on("completed", (job, response) => {
+  logger.info(`Tweet job was successful with response ${response}`)
   io.emit(job.data.ws + "-tweet-finish", {status: "success",response: response});
 });
 tweetWorker.on("failed", (job, failedReason) => {
-  //console.log(`Job ${job} failed : ${failedReason}`)
+  logger.error(`Failed tweet job`)
+	logger.error(failedReason);
   io.emit(job.data.ws + "-tweet-finish", {status: "failed",response: failedReason});
 });
 
@@ -75,6 +97,7 @@ app.use(function (req, res, next) {
   }
   req.twitter = T
   req.aws = AWS
+  req.logger = logger
   next();
 });
 

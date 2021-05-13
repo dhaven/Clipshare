@@ -40,12 +40,10 @@ class AWS {
 			.then((data) => {
 				const fileStream = fs.createWriteStream(dest_filepath);
 				data.Body.on("error", error => {
-					console.log(error)
 					reject(error)
 				});
 				data.Body.pipe(fileStream);
 				data.Body.on("close", () => {
-					console.log('video finished downloading')
 					fileStream.end()
 				})
 				fileStream.on('close', () => {

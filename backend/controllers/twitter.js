@@ -147,7 +147,6 @@ class Twitter {
         return this.tweet_with_video(token,response.data['media_id_string'],message)
       })
       .then(response => {
-        console.log(response.data)
         resolve(response.data)
       })
       .catch(error => {
@@ -178,7 +177,6 @@ class Twitter {
 
   upload_media(token,media_id,mp_source_video){
     let promise = new Promise((resolve,reject) => {
-      console.log("starting upload of media")
       let segment_id = 0
       let isStreamingCompleted = false
       let isUploading = false
@@ -268,13 +266,12 @@ class Twitter {
           if(response.data["processing_info"]["state"] == 'succeeded'){
             resolve(response)
           }else if(response.data["processing_info"]["state"] == 'failed'){
-            console.log(response.data.processing_info.error)
+            //console.log(response.data.processing_info.error)
             reject(response)
           }else{
             setTimeout(wait_processing_complete, 1000);
           }
         }).catch(error => {
-          console.log(error)
           reject(error)
         })
       }

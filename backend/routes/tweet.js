@@ -13,6 +13,7 @@ const router = express.Router();
 		message: 'video was added to the tweet queue'
 */
 router.post('/', (req, res, _next) => {
+	req.logger.log('info', `POST /tweet sending tweet for user ${req.body.user_id}`);
 	req.aws.dynamoDB_get_user(req.body.user_id)
 		.then(data => {
 			const token = {
@@ -31,7 +32,8 @@ router.post('/', (req, res, _next) => {
       });
 		})
 		.catch(error => {
-			console.log(error);
+			req.logger.error(`An error occured while fetching user : ${req.body.user_id} in dynamoDB`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });

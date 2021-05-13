@@ -11,12 +11,14 @@ const router = express.Router();
 	}
 */
 router.get('/authorize_app', (req, res, _next) => {
+	req.logger.log('info', `GET /auth/authorize_app`);
   req.twitter.request_oauth_token()
 		.then( response => {
     	res.json(response)
   	})
 		.catch( error => {
-			console.error(`Fatal error occurred: ${error}`)
+			req.logger.error(`An error occured while getting a request token to initial login flow`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });
@@ -37,12 +39,14 @@ router.get('/authorize_app', (req, res, _next) => {
 
 */
 router.post('/access_token', (req, res, _next) => {
+	req.logger.log('info', `POST /auth/access_token`);
   req.twitter.get_access_token(req.body.oauth_token,req.body.oauth_verifier)
 		.then( response => {
     	res.json(response)
   	})
 		.catch( error => {
-			console.error(`Fatal error occurred: ${error}`)
+			req.logger.error(`An error occured while converting a request token into a usable access token`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });
@@ -63,6 +67,7 @@ router.post('/access_token', (req, res, _next) => {
 	}
 */
 router.post('/profile', (req, res, _next) => {
+	req.logger.log('info', `POST /auth/profile Getting the url where the user's profile picture is stored`);
   req.twitter.profile(req.body.auth)
 		.then( response => {
     	res.json({
@@ -70,7 +75,8 @@ router.post('/profile', (req, res, _next) => {
 			})
   	})
 		.catch( error => {
-			console.error(`Fatal error occurred: ${error}`)
+			req.logger.error(`An error occured while fetching the user's profile on twitter`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });

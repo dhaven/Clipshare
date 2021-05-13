@@ -15,7 +15,7 @@ const { v4: uuidv4 } = require('uuid');
 */
 router.get('/', (req, res, _next) => {
 	 let video_id = uuidv4()
-	 console.log(req.query)
+	 req.logger.log('info', `GET /video ${req.query.url} for user ${req.query.user_id}`);
 	 req.queues.download.add('download_job',{
 		 uuid: video_id,
 		 url: req.query.url,
@@ -40,6 +40,7 @@ router.get('/', (req, res, _next) => {
 	}
 */
 router.post('/trim', (req, res, _next) => {
+	req.logger.log('info', `POST /video/trim with duration ${req.body.duration} for user ${req.body.user_id}`);
 	req.aws.dynamoDB_get_user(req.body.user_id)
 		.then(data => {
 			let trimmed_video_id = uuidv4()
@@ -56,7 +57,8 @@ router.post('/trim', (req, res, _next) => {
       });
 		})
 		.catch(error => {
-			console.log(error); // an error occurred
+			req.logger.error(`An error occured while fetching user : ${req.body.user_id} in dynamoDB`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });

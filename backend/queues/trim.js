@@ -24,6 +24,7 @@ module.exports = function(job){
         '-i', mp_source_video,
         '-to', duration,
         '-c', 'copy', mp_upload_video,
+        '-loglevel', 'error'
         ], {
           windowsHide: true,
           stdio: [
@@ -38,7 +39,6 @@ module.exports = function(job){
           .then(data => {
             fs.unlink(mp_upload_video, (err) => {
 							if (err) throw err;
-							console.log(`successfully deleted ${mp_upload_video} from local storage`);
 						});
             //4. Update user data with new trimmed video and submit stage
             AWS.dynamoDB_update_trim(job.data.user_id, trimmed_video_id)
@@ -46,22 +46,18 @@ module.exports = function(job){
                 resolve(trimmed_video_id)
               })
               .catch(error => {
-                console.log(error); // an error occurred
                 reject(error)
               })
           })
           .catch(error => {
-            console.log(error); // an error occurred
             reject(error)
           })
       });
       ffmpegProcess.on('error', error => {
-        console.error(`Fatal error occurred: ${error}`)
         reject(error)
       })
     })
     .catch(error => {
-      console.log(error); // an error occurred
       reject(error)
     })
   });

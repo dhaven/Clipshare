@@ -13,6 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 	} || user_object
 */
 router.get('/', (req, res, _next) => {
+	req.logger.log('info', `GET /user with id ${req.query.user_id} and video_url ${req.query.url}`);
 	req.aws.dynamoDB_get_user(req.query.user_id)
 		.then(data => {
 			//user has not yet downloaded a video or he switched to a new video
@@ -25,13 +26,15 @@ router.get('/', (req, res, _next) => {
 			}
 		})
 		.catch(error => {
-			console.log(error); // an error occurred
+			req.logger.error(`An error occured while fetching user : ${req.query.user_id} with matching video_url : ${req.query.url} in dynamoDB`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });
 
 //return all of the user's data
 router.get('/data', (req, res, _next) => {
+	req.logger.log('info', `GET /user/data with id ${req.query.user_id}`);
 	req.aws.dynamoDB_get_user(req.query.user_id)
 		.then(data => {
 			//user has not yet downloaded a video or he switched to a new video
@@ -44,7 +47,8 @@ router.get('/data', (req, res, _next) => {
 			}
 		})
 		.catch(error => {
-			console.log(error); // an error occurred
+			req.logger.error(`An error occured while fetching user data for user : ${req.query.user_id} in dynamoDB`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });
@@ -59,12 +63,14 @@ router.get('/data', (req, res, _next) => {
 */
 router.post('/', (req, res, _next) => {
 	let user_id = uuidv4()
+	req.logger.info(` POST /user : Creating new user ${user_id}`);
 	req.aws.dynamoDB_create_user(user_id)
 		.then(data => {
 			res.send(user_id)
 		})
 		.catch(error => {
-			console.log(error); // an error occurred
+			req.logger.error(`An error occured while creating user ${user_id} in dynamoDB`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });
@@ -78,12 +84,14 @@ router.post('/', (req, res, _next) => {
 		user_object
 */
 router.post('/edit_active', (req, res, _next) => {
+	req.logger.info(` POST /user/edit_active ${req.body.user_id} is editing == ${req.body.active}`);
 	req.aws.dynamoDB_update_edit(req.body.user_id, req.body.active)
 		.then(data => {
 			res.send(data)
 		})
 		.catch(error => {
-			console.log(error); // an error occurred
+			req.logger.error(`An error occured while setting edit.active to ${req.body.active} for user ${req.body.user_id}`)
+			req.logger.error(error);
 			res.status(500).send(error);
 		})
 });

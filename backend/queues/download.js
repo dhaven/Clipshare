@@ -18,7 +18,6 @@ module.exports = function(job){
 					.then(data => {
 						fs.unlink(mp_source_video, (err) => {
 							if (err) throw err;
-							console.log(`successfully deleted ${mp_source_video} from local storage`);
 						});
 						//2. Update the dynamoDB info
 						AWS.dynamoDB_update_video(job.data.user_id, video_id, job.data.url)
@@ -26,17 +25,14 @@ module.exports = function(job){
 								resolve(video_id)
 							})
 							.catch(error => {
-								console.log(error); // an error occurred
 							 	reject(error)
 							})
 					})
 					.catch(error => {
-						console.log(error); // an error occurred
             reject(error)
 					})
       })
       .on('error', error => {
-        console.error(`Fatal error occurred: ${error}`)
         reject(error)
       })
   });
